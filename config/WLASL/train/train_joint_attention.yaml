@@ -21,6 +21,8 @@ test_feeder_args:
   random_mirror: False
   normalization: True
   lap_pe: True
+  random_choose: True
+  window_size: 120
 
 # model
 model: model.attention.Model

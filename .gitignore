@@ -3,3 +3,5 @@ work_dir/*
 wandb/*
 .vscode
 data/*
+**__pycache__
+**.log

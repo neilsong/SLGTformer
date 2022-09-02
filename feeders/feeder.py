@@ -51,20 +51,14 @@ class Feeder(Dataset):
             self.get_mean_map()
 
         if self.lap_pe:
-            
-            if self.window_size == -1:
-                self.window_size = 150
-                phase = 'val'
-            else:
-                phase = 'train'
 
             edge_index_per_frame = torch.tensor(Graph().neighbor).long()
             self.edge_index = torch.cat([edge_index_per_frame + i * 27 for i in range(self.window_size)], axis=0).T
             self.num_nodes = self.edge_index.max() + 1
 
-            if os.path.exists(f'data/eig_vals_{phase}.pt'):
-                self.eig_vals = torch.load(f'data/eig_vals_{phase}.pt')
-                self.eig_vecs = torch.load(f'data/eig_vecs_{phase}.pt')
+            if os.path.exists(f'data/eig_vals.pt'):
+                self.eig_vals = torch.load(f'data/eig_vals.pt')
+                self.eig_vecs = torch.load(f'data/eig_vecs.pt')
             else:
                 pe_enabled_list = ['LapPE']
                 data = Data(
@@ -74,8 +68,8 @@ class Feeder(Dataset):
                 self.eig_vals, self.eig_vecs = posenc.compute_posenc_stats(data, pe_enabled_list, is_undirected=True, laplacian_norm_type="none", max_freqs=8, eigvec_norm="L2")
                 
                 # save eig_vals and eig_vecs
-                torch.save(self.eig_vals, f'data/eig_vals_{phase}.pt')
-                torch.save(self.eig_vecs, f'data/eig_vecs_{phase}.pt')
+                torch.save(self.eig_vals, f'data/eig_vals.pt')
+                torch.save(self.eig_vecs, f'data/eig_vecs.pt')
 
             self.transform = T.Compose([T.Distance()])
 
