@@ -231,21 +231,32 @@ class Processor():
         Feeder = import_class(self.arg.feeder)
         self.data_loader = dict()
         if self.arg.phase == 'train':
-            # self.data_loader['train'] = torch.utils.data.DataLoader(
-            #     dataset=Feeder(**self.arg.train_feeder_args),
-            #     batch_size=self.arg.batch_size,
-            #     shuffle=True,
-            #     num_workers=self.arg.num_worker,
-            #     drop_last=True,
-            #     worker_init_fn=init_seed)
-            self.data_loader['train'] = DataLoader(
+            if not self.arg.train_feeder_args["lap_pe"]:
+                self.data_loader['train'] = torch.utils.data.DataLoader(
+                    dataset=Feeder(**self.arg.train_feeder_args),
+                    batch_size=self.arg.batch_size,
+                    shuffle=True,
+                    num_workers=self.arg.num_worker,
+                    drop_last=True,
+                    worker_init_fn=init_seed)
+            else:
+                self.data_loader['train'] = DataLoader(
                 dataset=Feeder(**self.arg.train_feeder_args),
                 batch_size=self.arg.batch_size,
                 shuffle=True,
                 num_workers=self.arg.num_worker,
                 drop_last=True,
                 worker_init_fn=init_seed)
-        self.data_loader['test'] = DataLoader(
+        if not self.arg.train_feeder_args["lap_pe"]: 
+            self.data_loader['test'] = torch.utils.data.DataLoader(
+            dataset=Feeder(**self.arg.test_feeder_args),
+            batch_size=self.arg.test_batch_size,
+            shuffle=False,
+            num_workers=self.arg.num_worker,
+            drop_last=False,
+            worker_init_fn=init_seed)
+        else:
+            self.data_loader['test'] = DataLoader(
             dataset=Feeder(**self.arg.test_feeder_args),
             batch_size=self.arg.test_batch_size,
             shuffle=False,
@@ -319,8 +330,8 @@ class Processor():
                 params,
                 momentum=0.9,
                 nesterov=self.arg.nesterov)
-        elif self.arg.optimizer == 'Adam':
-            self.optimizer = optim.Adam(
+        elif self.arg.optimizer == 'AdamW':
+            self.optimizer = optim.AdamW(
                 self.model.parameters(),
                 lr=self.arg.base_lr,
                 weight_decay=self.arg.weight_decay)
@@ -344,7 +355,7 @@ class Processor():
             yaml.dump(arg_dict, f)
 
     def adjust_learning_rate(self, epoch):
-        if self.arg.optimizer == 'SGD' or self.arg.optimizer == 'Adam':
+        if self.arg.optimizer == 'SGD' or self.arg.optimizer == 'AdamW':
             if epoch < self.arg.warm_up_epoch:
                 lr = self.arg.base_lr * (epoch + 1) / self.arg.warm_up_epoch
             else:

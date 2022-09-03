@@ -47,8 +47,9 @@ model_args:
 
 
 #optim
-weight_decay: 0.0001
-base_lr: 0.1
+optimizer: AdamW
+weight_decay: 1e-5
+base_lr: 0.01
 step: [150, 200]
 
 # training

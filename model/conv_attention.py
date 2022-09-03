@@ -73,9 +73,9 @@ class unit_tcn_skip(nn.Module):
         return x
 
 
-class unit_gcn(nn.Module):
-    def __init__(self, in_channels, out_channels, A, groups, num_point, coff_embedding=4, num_subset=3):
-        super(unit_gcn, self).__init__()
+class unit_sattn(nn.Module):
+    def __init__(self, in_channels, out_channels, A, groups, num_point, num_subset=3):
+        super(unit_sattn, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.num_point = num_point
@@ -148,11 +148,11 @@ class unit_gcn(nn.Module):
         return x
 
 
-class TCN_GCN_unit(nn.Module):
+class SATTN_TCN_unit(nn.Module):
     def __init__(self, in_channels, out_channels, A, groups, num_point, block_size, stride=1, residual=True, attention=True):
-        super(TCN_GCN_unit, self).__init__()
+        super(SATTN_TCN_unit, self).__init__()
         num_jpts = A.shape[-1]
-        self.gcn1 = unit_gcn(in_channels, out_channels, A, groups, num_point)
+        self.spatial_attn1 = unit_sattn(in_channels, out_channels, A, groups, num_point)
         self.tcn1 = unit_tcn(out_channels, out_channels,
                              stride=stride, num_point=num_point)
         self.relu = nn.ReLU()
@@ -222,7 +222,7 @@ class TCN_GCN_unit(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, num_class=60, num_point=25, num_person=2, groups=8, block_size=41, graph=None, graph_args=dict(), in_channels=3):
+    def __init__(self, num_class=60, num_point=25, num_person=2, groups=8, block_size=41, graph=None, graph_args=dict(), in_channels=3, attn_dropout=0.5):
         super(Model, self).__init__()
 
         if graph is None:
@@ -234,25 +234,19 @@ class Model(nn.Module):
         A = self.graph.A
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
 
-        self.l1 = TCN_GCN_unit(in_channels, 64, A, groups, num_point,
+        self.l1 = SATTN_TCN_unit(in_channels, 64, A, groups, num_point,
                                block_size, residual=False)
-        self.l2 = TCN_GCN_unit(64, 64, A, groups, num_point, block_size)
-        self.l3 = TCN_GCN_unit(64, 64, A, groups, num_point, block_size)
-        self.l4 = TCN_GCN_unit(64, 64, A, groups, num_point, block_size)
-        self.l5 = TCN_GCN_unit(
+        self.l2 = SATTN_TCN_unit(64, 64, A, groups, num_point, block_size)
+        self.l3 = SATTN_TCN_unit(64, 64, A, groups, num_point, block_size)
+        self.l4 = SATTN_TCN_unit(64, 64, A, groups, num_point, block_size)
+        self.l5 = SATTN_TCN_unit(
             64, 128, A, groups, num_point, block_size, stride=2)
-        self.l6 = TCN_GCN_unit(128, 128, A, groups, num_point, block_size)
-        self.l7 = TCN_GCN_unit(128, 128, A, groups, num_point, block_size)
-        self.l8 = TCN_GCN_unit(128, 256, A, groups,
+        self.l6 = SATTN_TCN_unit(128, 128, A, groups, num_point, block_size)
+        self.l7 = SATTN_TCN_unit(128, 128, A, groups, num_point, block_size)
+        self.l8 = SATTN_TCN_unit(128, 256, A, groups,
                                num_point, block_size, stride=2)
-        self.l9 = TCN_GCN_unit(256, 256, A, groups, num_point, block_size)
-        self.l10 = TCN_GCN_unit(256, 256, A, groups, num_point, block_size)
-
-        # temporal attention
-        self.sigmoid = nn.Sigmoid()
-        self.conv_ta = nn.Conv1d(256, 1, 9, padding=4)
-        nn.init.constant_(self.conv_ta.weight, 0)
-        nn.init.constant_(self.conv_ta.bias, 0)
+        self.l9 = SATTN_TCN_unit(256, 256, A, groups, num_point, block_size)
+        self.l10 = SATTN_TCN_unit(256, 256, A, groups, num_point, block_size)
 
         self.fc = nn.Linear(256, num_class)
         nn.init.normal(self.fc.weight, 0, math.sqrt(2. / num_class))
@@ -278,12 +272,6 @@ class Model(nn.Module):
 
         # N*M,C,T,V
         c_new = x.size(1)
-
-        # temporal attention
-        se = x.mean(-1)
-        se1 = self.sigmoid(self.conv_ta(se))
-        x = x * se1.unsqueeze(-1) + x
-
 
         # print(x.size())
         # print(N, M, c_new)

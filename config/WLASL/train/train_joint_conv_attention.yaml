@@ -1,4 +1,4 @@
-Experiment_name: wlasl_joint_attn2
+Experiment_name: custom_attn
 
 # feeder
 feeder: feeders.feeder.Feeder
@@ -13,17 +13,15 @@ train_feeder_args:
   random_mirror: True
   random_mirror_p: 0.5
   is_vector: False
-  lap_pe: False
 
 test_feeder_args:
   data_path: data/val_data_joint.npy
   label_path: data/val_label.pkl
   random_mirror: False
   normalization: True
-  lap_pe: False
 
 # model
-model: model.decouple_gcn_attn.Model
+model: model.conv_attention.Model
 model_args:
   num_class: 2000
   num_point: 27
@@ -31,8 +29,10 @@ model_args:
   graph: graph.sign_27.Graph
   groups: 16
   block_size: 41
+  attn_dropout: 0.5
   graph_args:
     labeling_mode: 'spatial'
+
 
 #optim
 weight_decay: 0.0001
@@ -45,10 +45,14 @@ device: [0]
 # start_epoch: 183
 keep_rate: 0.9
 only_train_epoch: 1
-batch_size: 64
-test_batch_size: 64
+batch_size: 12
+test_batch_size: 12
 num_epoch: 250
 nesterov: True
 warm_up_epoch: 20
+wandb: True
+wandb_project: SLGTformer First Run
+wandb_entity: irvl
+wandb_name: Stock GPS Attention in SLGCN Net Skeleton, 12BS
 
-wandb: False
+num_worker: 4
