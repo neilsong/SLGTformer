@@ -1,4 +1,4 @@
-Experiment_name: gps_attn
+Experiment_name: gps_attn_reg_lr
 
 # feeder
 feeder: feeders.feeder.Feeder
@@ -49,7 +49,7 @@ model_args:
 #optim
 optimizer: AdamW
 weight_decay: 1e-5
-base_lr: 0.01
+base_lr: 0.001
 step: [150, 200]
 
 # training
@@ -66,6 +66,6 @@ warm_up_epoch: 20
 wandb: True
 wandb_project: SLGTformer First Run
 wandb_entity: irvl
-wandb_name: Stock GPS Attention in SLGCN Net Skeleton, 12BS
+wandb_name: Stock GPS Attention in SLGCN Net Skeleton, 12BS, Reg LR
 
 num_worker: 4

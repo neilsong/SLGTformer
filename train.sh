@@ -1,1 +1,1 @@
-nohup python -u main.py --config config/WLASL/train/train_joint_attention.yaml > output/train_2.log 2>&1 &
+nohup python -u main.py --config config/WLASL/train/train_joint_conv_attention.yaml > output/train_2.log 2>&1 &
