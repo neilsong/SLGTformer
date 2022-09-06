@@ -442,11 +442,13 @@ class Processor():
             loss_value.append(loss.data)
             timer['model'] += self.split_time()
 
+            self.lr = self.optimizer.param_groups[0]['lr']
+
             if self.arg.wandb: wandb.log({
                 'train_loss': loss.item(),
+                'lr': self.lr,
             })
 
-            self.lr = self.optimizer.param_groups[0]['lr']
             if self.global_step % self.arg.log_interval == 0:
                 self.print_log(
                     '\tBatch({}/{}) done. Loss: {:.4f}  lr:{:.6f}'.format(
