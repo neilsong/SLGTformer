@@ -44,8 +44,8 @@ step: [150, 200]
 
 # training
 device: [0]
-# weights: save_models/csl_joint-182.pt
-# start_epoch: 183
+weights: save_models/wlasl_joint_attn2-48.pt
+start_epoch: 49
 keep_rate: 0.9
 only_train_epoch: 1
 batch_size: 16
@@ -60,3 +60,4 @@ wandb_entity: irvl
 wandb_name: Conv Attention, 16BS, Conv LR
 
 num_worker: 4
+save_interval: 10

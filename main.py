@@ -563,10 +563,11 @@ class Processor():
 
                 self.train(epoch, save_model=save_model)
 
-                val_loss = self.eval(
-                    epoch,
-                    save_score=self.arg.save_score,
-                    loader_name=['test'])
+                if save_model:
+                    val_loss = self.eval(
+                        epoch,
+                        save_score=self.arg.save_score,
+                        loader_name=['test'])
 
                 # self.lr_scheduler.step(val_loss)
 
