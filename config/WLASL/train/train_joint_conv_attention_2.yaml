@@ -54,7 +54,7 @@ num_epoch: 250
 nesterov: True
 warm_up_epoch: 20
 
-wandb: False
+wandb: True
 wandb_project: SLGTformer First Run
 wandb_entity: irvl
 wandb_name: All Attention, 24BS, Hi LR, SGD

@@ -202,12 +202,18 @@ class attn_block(nn.Module):
 
     def forward(self, x):
         x = self.pre_proj(x)
-        B = x.shape[0]
+        B, T = x.shape[0], x.shape[2]
         x = rearrange(x, 'b c t v -> (b t) v c')
         if self.pos_emb:
             x = x + self.spatial_pos_embed_layer
             x = rearrange(x, '(b t) v c -> (b v) t c', b=B)
-            x = x + self.temporal_pos_embed_layer
+            if T != self.temporal_pos_embed_layer.size(1):
+                time_embed = self.temporal_pos_embed_layer.transpose(1, 2)
+                new_time_embed = F.interpolate(time_embed, size=(T), mode='nearest')
+                new_time_embed = new_time_embed.transpose(1, 2)
+                x = x + new_time_embed
+            else:
+                x = x + self.temporal_pos_embed_layer
             x = rearrange(x, '(b v) t c -> (b t) v c', b=B)
         x = self.residual(x) + self.drop_path(self.attn(self.norm1(x)))
         x = x + self.drop_path(self.mlp(self.norm2(x)))
