@@ -7,3 +7,4 @@ from . import slgt_layer
 from . import encoder
 from . import gated_gcn_layer
 from . import conv_attention
+from . import conv_attention_2
