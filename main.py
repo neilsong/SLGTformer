@@ -465,7 +465,8 @@ class Processor():
         weights = OrderedDict([[k.split('module.')[-1],
                                 v.cpu()] for k, v in state_dict.items()])
 
-        torch.save(weights, self.arg.model_saved_name +
+        if save_model: 
+            torch.save(weights, self.arg.model_saved_name +
                    '-' + str(epoch) + '.pt')
 
     def eval(self, epoch, save_score=False, loader_name=['test'], wrong_file=None, result_file=None):
