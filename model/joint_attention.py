@@ -229,7 +229,7 @@ class attn_block(nn.Module):
         return x
 
 class unit_sattn(nn.Module):
-    def __init__(self, in_channels, out_channels, A, groups, num_point, num_subset=3, s_pos_emb=False, s_num_heads=1, **kwargs):
+    def __init__(self, in_channels, out_channels, A, groups, num_point, num_subset=3, s_pos_emb=False, s_num_heads=1, t_pos_emb=False, **kwargs):
         super(unit_sattn, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -261,7 +261,7 @@ class unit_sattn(nn.Module):
             self.attention_block = nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, 1),
                 nn.BatchNorm2d(out_channels),
-                attn_block(out_channels, out_channels * num_subset, num_heads=s_num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, attn_drop=0.0, drop=0., drop_path=0., act_layer=nn.GELU, norm_layer=partial(nn.LayerNorm, eps=1e-6), s_pos_emb=s_pos_emb, num_point=num_point, **kwargs)
+                attn_block(out_channels, out_channels * num_subset, num_heads=s_num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, attn_drop=0.0, drop=0., drop_path=0., act_layer=nn.GELU, norm_layer=partial(nn.LayerNorm, eps=1e-6), s_pos_emb=s_pos_emb, t_pos_emb=t_pos_emb, num_point=num_point, **kwargs)
             )
         else:
             self.attention_block = attn_block(in_channels, out_channels * num_subset, num_heads=s_num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, attn_drop=0.0, drop=0., drop_path=0., act_layer=nn.GELU, norm_layer=partial(nn.LayerNorm, eps=1e-6))
@@ -300,9 +300,9 @@ class unit_sattn(nn.Module):
 
 
 class SATTN_TCN_unit(nn.Module):
-    def __init__(self, in_channels, out_channels, A, groups, num_point, block_size, stride=1, residual=True, use_gpsa=True, s_pos_emb=False, s_num_heads=1, t_num_heads=4, **kwargs):
+    def __init__(self, in_channels, out_channels, A, groups, num_point, block_size, stride=1, residual=True, use_gpsa=True, s_pos_emb=False, s_num_heads=1, t_pos_emb=False, t_num_heads=4, **kwargs):
         super(SATTN_TCN_unit, self).__init__()
-        self.spatial_attn1 = unit_sattn(in_channels, out_channels, A, groups, num_point, s_pos_emb=s_pos_emb, s_num_heads=s_num_heads, **kwargs)
+        self.spatial_attn1 = unit_sattn(in_channels, out_channels, A, groups, num_point, s_pos_emb=s_pos_emb, s_num_heads=s_num_heads, t_pos_emb=t_pos_emb, **kwargs)
         self.temporal_attn1 = tattn_block(out_channels, out_channels, t_num_heads=t_num_heads, stride=stride, num_point=num_point, block_size=block_size, use_gpsa=use_gpsa)
         self.relu = nn.ReLU()
 
@@ -329,7 +329,7 @@ class SATTN_TCN_unit(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, num_class=60, num_point=25, num_person=2, groups=8, block_size=41, graph=None, graph_args=dict(), in_channels=3, use_gpsa=True, inner_dim=64, drop_layers=4, depth=10, s_num_heads=1, t_num_heads=4, window_size=120, s_pos_emb=True):
+    def __init__(self, num_class=60, num_point=25, num_person=2, groups=8, block_size=41, graph=None, graph_args=dict(), in_channels=3, use_gpsa=True, inner_dim=64, drop_layers=4, depth=10, s_num_heads=1, t_num_heads=4, window_size=120, s_pos_emb=True, t_pos_emb=True):
         super(Model, self).__init__()
 
         if graph is None:
@@ -347,7 +347,7 @@ class Model(nn.Module):
 
         self.layers = nn.ModuleList(
             [
-                SATTN_TCN_unit(in_channels, inner_dim, A, groups, num_point, block_size, residual=False, use_gpsa=use_gpsa, s_pos_emb=s_pos_emb, s_num_heads=s_num_heads, t_num_heads=t_num_heads, window_size=window_size)
+                SATTN_TCN_unit(in_channels, inner_dim, A, groups, num_point, block_size, residual=False, use_gpsa=use_gpsa, s_pos_emb=s_pos_emb, s_num_heads=s_num_heads, t_pos_emb=t_pos_emb, t_num_heads=t_num_heads, window_size=window_size)
                 if i == 0 else
                 SATTN_TCN_unit(inner_dim * inner_dim_expansion[i-1], inner_dim * inner_dim_expansion[i], A, groups, num_point, block_size, stride=inner_dim_expansion[i] // inner_dim_expansion[i-1], residual=True, use_gpsa=use_gpsa, pos_emb=False, s_num_heads=s_num_heads, t_num_heads=t_num_heads)
                 for i in range(depth)
