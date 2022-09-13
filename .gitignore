@@ -5,3 +5,4 @@ wandb/*
 data/*
 **__pycache__
 **.log
+**sota**
