@@ -1,13 +1,95 @@
-import torch
-import torch.nn as nn
-import numpy as np
 import math
-from model.dropSke import DropBlock_Ske
-from model.dropT import DropBlockT_1d
-from model.slgt_layer import SLGTLayer
-from einops import rearrange
-from model.encoder import FeatureEncoder
+import torch.nn as nn
+import torch
+from timm.models.layers import trunc_normal_
 
+class MHSA(nn.Module):
+    def __init__(self, dim, out_dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
+        super().__init__()
+        self.num_heads = num_heads
+        head_dim = dim // num_heads
+        self.scale = qk_scale or head_dim ** -0.5
+
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(dim, out_dim)
+        self.proj_drop = nn.Dropout(proj_drop)
+        self.apply(self._init_weights)
+        
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight, std=.02)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm):
+            nn.init.constant_(m.bias, 0)
+            nn.init.constant_(m.weight, 1.0)
+
+    def get_attention_map(self, x, return_map = False):
+        B, N, C = x.shape
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]
+        attn_map = (q @ k.transpose(-2, -1)) * self.scale
+        attn_map = attn_map.softmax(dim=-1).mean(0)
+
+        img_size = int(N**.5)
+        ind = torch.arange(img_size).view(1,-1) - torch.arange(img_size).view(-1, 1)
+        indx = ind.repeat(img_size,img_size)
+        indy = ind.repeat_interleave(img_size,dim=0).repeat_interleave(img_size,dim=1)
+        indd = indx**2 + indy**2
+        distances = indd**.5
+        distances = distances.to('cuda')
+
+        dist = torch.einsum('nm,hnm->h', (distances, attn_map))
+        dist /= N
+        
+        if return_map:
+            return dist, attn_map
+        else:
+            return dist
+
+            
+    def forward(self, x):
+        B, N, C = x.shape
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]
+
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+
+class Mlp(nn.Module):
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+        super().__init__()
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
+        self.fc1 = nn.Linear(in_features, hidden_features)
+        self.act = act_layer()
+        self.fc2 = nn.Linear(hidden_features, out_features)
+        self.drop = nn.Dropout(drop)
+        self.apply(self._init_weights)
+        
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight, std=.02)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm):
+            nn.init.constant_(m.bias, 0)
+            nn.init.constant_(m.weight, 1.0)
+            
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.drop(x)
+        x = self.fc2(x)
+        x = self.drop(x)
+        return x
 
 def import_class(name):
     components = name.split('.')
@@ -27,68 +109,20 @@ def conv_branch_init(conv):
 
 
 def conv_init(conv):
-    nn.init.kaiming_normal(conv.weight, mode='fan_out')
-    nn.init.constant(conv.bias, 0)
+    nn.init.kaiming_normal_(conv.weight, mode='fan_out')
+    nn.init.constant_(conv.bias, 0)
 
 
 def bn_init(bn, scale):
-    nn.init.constant(bn.weight, scale)
-    nn.init.constant(bn.bias, 0)
+    nn.init.constant_(bn.weight, scale)
+    nn.init.constant_(bn.bias, 0)
 
-
-class Model(nn.Module):
-    def __init__(self, num_class=60, num_point=25, num_person=2, groups=8, block_size=41, graph=None, graph_args=dict(), in_channels=3, 
-        num_layers=4, num_heads=4, dim_h=52, attn_dropout=0.5,
-        dim_pe=8, enc_layers=2, enc_n_heads=4, enc_post_layers=0, max_freqs=8):
-        super(Model, self).__init__()
-
-        if graph is None:
-            raise ValueError()
-        else:
-            Graph = import_class(graph)
-            self.graph = Graph(**graph_args)
-
-        # A = self.graph.A
-        self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
-
-        self.encoder = FeatureEncoder(in_channels, dim_h, dim_pe, layers=enc_layers, n_heads=enc_n_heads, post_layers=enc_post_layers, max_freqs=max_freqs)
-
-        layers = []
-        for _ in range(num_layers):
-            layers.append(SLGTLayer(
-                dim_in=dim_h,
-                dim_out=dim_h,
-                num_heads=num_heads,
-                attn_dropout=attn_dropout,
-                residual=True,
-            ))
-        self.layers = torch.nn.Sequential(*layers)
-
-        self.fc = nn.Linear(dim_h, num_class)
-        nn.init.normal(self.fc.weight, 0, math.sqrt(2. / num_class))
-        bn_init(self.data_bn, 1)
-
-    def forward(self, batch, keep_prob=0.9):
-        x = batch.x
-        x = rearrange(x, '(n t v) (c m) -> n c t v m', m=1, v=27, c=x.size(1), t=batch.window[0])
-        N, C, T, V, M = x.size()
-        x = x.permute(0, 4, 3, 1, 2).contiguous().view(N, M * V * C, T)
-        x = self.data_bn(x)
-        x = x.view(N, M, V, C, T).permute(
-            0, 1, 3, 4, 2).contiguous().view(N * M, C, T, V)
-
-        batch.x = rearrange(x, '(n m) c t v -> (n t v) (c m)', n=N, m=M, t=T, v=V, c=C)
-
-        batch  = self.encoder(batch)
-        batch = self.layers(batch)
-        # N*M,C,T,V
-        c_new = batch.x.size(1)
-
-        # print(x.size())
-        # print(N, M, c_new)
-
-        # x = x.view(N, M, c_new, -1)
-        x = batch.x.reshape(N, M, c_new, -1)
-        x = x.mean(3).mean(1)
-
-        return self.fc(x)
+class DepthWiseConv2d(nn.Module):
+    def __init__(self, dim_in, dim_out, kernel_size, padding, stride, bias = True):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(dim_in, dim_out, kernel_size = kernel_size, padding = padding, groups = dim_in, stride = stride, bias = bias),
+            nn.Conv2d(dim_out, dim_out, kernel_size = 1, bias = bias)
+        )
+    def forward(self, x):
+        return self.net(x)
