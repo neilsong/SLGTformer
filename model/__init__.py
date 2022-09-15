@@ -12,3 +12,6 @@ from . import attention
 from . import new_attention
 from . import twins_attention
 from . import joint_attention
+from . import twins_attention_orig
+from . import swin_block
+from . import swin_attention

@@ -104,7 +104,7 @@ class unit_tcn_skip(nn.Module):
 #         return x
 
 class unit_sattn(nn.Module):
-    def __init__(self, in_channels, out_channels, A, groups, num_point, num_subset=3, s_pos_emb=False, s_num_heads=1, t_pos_emb=False, depth=1, **kwargs):
+    def __init__(self, in_channels, out_channels, A, groups, num_point, num_subset=3, s_pos_emb=False, s_num_heads=1, t_pos_emb=False, **kwargs):
         super(unit_sattn, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -133,15 +133,13 @@ class unit_sattn(nn.Module):
         bn_init(self.bn, 1e-6)
 
         if s_pos_emb:
-            attn_layers = [  attn_block(out_channels, out_channels * num_subset if i == depth - 1 else out_channels, num_heads=s_num_heads, mlp_ratio=4, s_pos_emb=s_pos_emb, t_pos_emb=t_pos_emb, num_point=num_point, **kwargs) for i in range(depth)]
             self.attention_block = nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, 1),
                 nn.BatchNorm2d(out_channels),
-                *attn_layers
+                attn_block(out_channels, out_channels * num_subset, num_heads=s_num_heads, mlp_ratio=4, s_pos_emb=s_pos_emb, t_pos_emb=t_pos_emb, num_point=num_point, **kwargs)
             )
         else:
-            attn_layers = [ attn_block(in_channels if i == 0 else out_channels, out_channels * num_subset if i == depth-1 else out_channels, num_heads=s_num_heads,  mlp_ratio=4, s_pos_emb=s_pos_emb, t_pos_emb=t_pos_emb, num_point=num_point,) for i in range(depth)]
-            self.attention_block = nn.Sequential(*attn_layers)
+            self.attention_block = attn_block(in_channels, out_channels * num_subset, num_heads=s_num_heads,  mlp_ratio=4, s_pos_emb=s_pos_emb, t_pos_emb=t_pos_emb, num_point=num_point,)
 
         eye_array = []
         for i in range(out_channels):
@@ -176,15 +174,49 @@ class unit_sattn(nn.Module):
         return x
 
 
-class SATTN_TCN_unit(nn.Module):
-    def __init__(self, in_channels, out_channels, A, groups, num_point, block_size, stride=1, residual=True, s_pos_emb=False, s_num_heads=1, t_pos_emb=False, t_num_heads=4, t_depth=1, t_patch=2, global_k=5, is_last=False, window_size=120, t_sr_ratio=8, s_depth=1, **kwargs):
-        super(SATTN_TCN_unit, self).__init__()
+class unit_block(nn.Module):
+    def __init__(
+        self, 
+
+        # general configuration
+        in_channels, 
+        out_channels, 
+        num_heads,
+
+        # spatial
+        A, 
+        groups, 
+        num_point, 
+        block_size, 
+        stride=1, 
+        residual=True, 
+        s_pos_emb=False, 
+
+        # temporal
+        t_pos_emb=False, 
+        patch_partition=False,
+        window_size=120,
+        **kwargs
+    ):
+        super(unit_block, self).__init__()
         hidden = in_channels
         if in_channels == 3:
             hidden = out_channels
 
-        self.spatial_attn1 = unit_sattn(in_channels, hidden, A, groups, num_point, s_pos_emb=s_pos_emb, s_num_heads=s_num_heads, t_pos_emb=t_pos_emb, depth=s_depth, **kwargs)
-        self.temporal_attn1 = tattn_block(hidden, out_channels, t_num_heads=t_num_heads, num_point=num_point, block_size=block_size, t_depth=t_depth, t_patch=t_patch, global_k=global_k, is_last=is_last, window_size=window_size, t_sr_ratio=t_sr_ratio)
+        self.spatial_attn1 = unit_sattn(in_channels, hidden, A, groups, num_point, s_pos_emb=s_pos_emb, s_num_heads=num_heads, t_pos_emb=t_pos_emb, **kwargs)
+        self.temporal_attn1 = tattn_block(
+            hidden, out_channels, 
+
+            # drop graph params
+            num_point=num_point, 
+            block_size=block_size,
+
+            # swin params
+            window_size=window_size, 
+            patch_partition=patch_partition,
+            num_heads=num_heads, 
+
+        )
         self.relu = nn.ReLU()
 
         self.A = nn.Parameter(torch.tensor(np.sum(np.reshape(A.astype(np.float32), [
@@ -210,8 +242,37 @@ class SATTN_TCN_unit(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, num_class=60, num_point=25, num_person=2, groups=8, block_size=41, graph=None, graph_args=dict(), in_channels=3, inner_dim=64, drop_layers=3, depth=4, s_num_heads=1, t_num_heads=[2, 4, 8, 16], window_size=120, s_pos_emb=True, t_pos_emb=False, t_depth_arr=[2, 2, 10, 4], t_patch_arr=[3, 2, 2, 2], global_k=5, 
-    t_sr_ratios=[8, 4, 2, 1]):
+    def __init__(
+        self, 
+        num_class=200, 
+        num_point=25, 
+        num_person=2, 
+
+        # spatial
+        groups=8, 
+        block_size=41, 
+        graph=None, 
+        graph_args=dict(), 
+        
+        # model configuration
+        in_channels=3, 
+        inner_dim=64, 
+        drop_layers=3, 
+        
+        s_pos_emb=True, 
+        t_pos_emb=False, 
+        
+        # swin config
+        window_size=120, 
+        patch_size=4,
+        embed_dim=96, 
+        depths=[2, 2, 6, 2], 
+        num_heads=[3, 6, 12, 24],
+        attn_window_size=7, 
+        mlp_ratio=4., 
+        qkv_bias=True,
+        shift_size=0, # no shifted windows
+    ):
         super(Model, self).__init__()
 
         if graph is None:
@@ -233,13 +294,11 @@ class Model(nn.Module):
             window_size_arr.append(cur_window_size)
             cur_window_size //= patch
 
-        s_depth_arr = [i // 2 for i in t_depth_arr]
-
         self.layers = nn.ModuleList(
             [
-                SATTN_TCN_unit(in_channels, inner_dim, A, groups, num_point, block_size, residual=False, s_pos_emb=s_pos_emb, s_num_heads=s_num_heads[0], t_pos_emb=t_pos_emb, t_num_heads=t_num_heads[0], t_depth=t_depth_arr[0], t_patch=t_patch_arr[0], global_k=global_k, window_size=window_size_arr[0], t_sr_ratio=t_sr_ratios[0], s_depth=s_depth_arr[0])
+                unit_block(in_channels, inner_dim, A, groups, num_point, block_size, residual=False, s_pos_emb=s_pos_emb, s_num_heads=s_num_heads, t_pos_emb=t_pos_emb, t_num_heads=t_num_heads[0], t_depth=t_depth_arr[0], t_patch=t_patch_arr[0], global_k=global_k, window_size=window_size_arr[0], t_sr_ratio=t_sr_ratios[0])
                 if i == 0 else
-                SATTN_TCN_unit(inner_dim * inner_dim_expansion[i-1], inner_dim * inner_dim_expansion[i], A, groups, num_point, block_size, stride=inner_dim_expansion[i] // inner_dim_expansion[i-1], residual=True, s_pos_emb=s_pos_emb, t_pos_emb=t_pos_emb, s_num_heads=s_num_heads[i], t_num_heads=t_num_heads[i], t_depth=t_depth_arr[i], t_patch=t_patch_arr[i], global_k=global_k, is_last=(i == depth - 1), window_size=window_size_arr[i], t_sr_ratio=t_sr_ratios[i], s_depth=s_depth_arr[i])
+                unit_block(inner_dim * inner_dim_expansion[i-1], inner_dim * inner_dim_expansion[i], A, groups, num_point, block_size, stride=inner_dim_expansion[i] // inner_dim_expansion[i-1], residual=True, s_pos_emb=s_pos_emb, t_pos_emb=t_pos_emb, s_num_heads=s_num_heads, t_num_heads=t_num_heads[i], t_depth=t_depth_arr[i], t_patch=t_patch_arr[i], global_k=global_k, is_last=(i == depth - 1), window_size=window_size_arr[i], t_sr_ratio=t_sr_ratios[i])
                 for i in range(depth)
             ]
         )
