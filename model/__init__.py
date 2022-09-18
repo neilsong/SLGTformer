@@ -15,3 +15,5 @@ from . import joint_attention
 from . import twins_attention_orig
 from . import swin_block
 from . import swin_attention
+from . import grpe_attention
+from . import grpe_attention_no_a
