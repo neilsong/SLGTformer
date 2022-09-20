@@ -163,7 +163,7 @@ class TwinSVT(nn.Module):
     """
     alias Twins-SVT
     """
-    def __init__(self, window_size=120, patch_size=4, in_chans=3, num_classes=1000, embed_dims=[64, 128, 256],
+    def __init__(self, embed_dims=[64, 128, 256],
                  num_heads=[1, 2, 4], mlp_ratios=[4, 4, 4], qkv_bias=False, qk_scale=None, drop_rate=0.,
                  attn_drop_rate=0., drop_path_rate=0., norm_layer=nn.LayerNorm,
                  depths=[4, 4, 4], sr_ratios=[4, 2, 1], block_cls=GroupBlock, wss=[7, 7, 7]):
@@ -187,17 +187,6 @@ class TwinSVT(nn.Module):
             self.blocks.append(_block)
             cur += depths[k]
 
-        self.patch_embeds = nn.ModuleList()
-        self.pos_drops = nn.ModuleList()
-
-        for i in range(len(depths)):
-            if i == 0:
-                self.patch_embeds.append(PatchEmbed(window_size, patch_size, in_chans, embed_dims[i]))
-            else:
-                self.patch_embeds.append(
-                    PatchEmbed(window_size // patch_size // 2 ** (i - 1), 2, embed_dims[i - 1], embed_dims[i]))
-            self.pos_drops.append(nn.Dropout(p=drop_rate))
-
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
@@ -219,12 +208,10 @@ class TwinSVT(nn.Module):
             m.weight.data.fill_(1.0)
             m.bias.data.zero_()
 
-    def forward(self, x):
+    def forward(self, x, T, V):
         B = x.shape[0]
 
         for i in range(len(self.depths)):
-            x, (T, V) = self.patch_embeds[i](x)
-            x = self.pos_drops[i](x)
             for j, blk in enumerate(self.blocks[i]):
                 x = blk(x, T, V)
                 if j == 0:

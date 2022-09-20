@@ -1,4 +1,4 @@
-Experiment_name: wlasl_gpre_attn_with_a
+Experiment_name: wlasl_twin_attn_diffstep
 
 # feeder
 feeder: feeders.feeder.Feeder
@@ -21,9 +21,11 @@ test_feeder_args:
   random_mirror: False
   normalization: True
   lap_pe: False
+  random_choose: True
+  window_size: 120
 
 # model
-model: model.grpe_attention.Model
+model: model.twin_attention.Model
 model_args:
   num_class: 2000
   num_point: 27
@@ -33,35 +35,39 @@ model_args:
   block_size: 41
   graph_args:
     labeling_mode: 'spatial'
-  use_grpe: True
+  use_grpe: False
   inner_dim: 64
   window_size: 120
   s_num_heads: 4
-  t_num_heads: 8
-  depth: 5
+  t_num_heads: 4
+  t_depths: [2, 2, 2, 2]
+  wss: [6, 6, 6, 6]
+  sr_ratios: [8, 4, 2, 1]
+  depth: 4
   s_pos_emb: False
+  drop_layers: 2
 
 #optim
 weight_decay: 0.0001
 base_lr: 0.1
-step: [150, 200, 250]
+step: [80, 100, 105]
 
 # training
 device: [1]
-weights: save_models/wlasl_gpre_attn_with_a-249.pt
-start_epoch: 249
+# weights: save_models/wlasl_all_attn-187.pt
+# start_epoch: 188
 keep_rate: 0.9
 only_train_epoch: 1
 batch_size: 24
 test_batch_size: 24
-num_epoch: 300
+num_epoch: 110
 nesterov: True
 warm_up_epoch: 20
 
 wandb: True
 wandb_project: SLGTformer First Run
 wandb_entity: irvl
-wandb_name: GRPE Attention, With A, Continued, 24BS
+wandb_name: Twin Attention, Diffstep, 24BS
 
 num_worker: 4
 save_interval: 10

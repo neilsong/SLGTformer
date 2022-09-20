@@ -185,7 +185,7 @@ class unit_sattn(nn.Module):
         for i in range(out_channels):
             eye_array.append(torch.eye(num_point))
         self.eyes = nn.Parameter(torch.tensor(torch.stack(
-            eye_array), requires_grad=False, device='cuda'), requires_grad=False)  # [c,25,25]
+            eye_array), requires_grad=False), requires_grad=False)  # [c,25,25]
 
     def norm(self, A):
         b, c, h, w = A.size()
@@ -222,7 +222,7 @@ class SATTN_TCN_unit(nn.Module):
         self.relu = nn.ReLU()
 
         self.A = nn.Parameter(torch.tensor(np.sum(np.reshape(A.astype(np.float32), [
-                              3, num_point, num_point]), axis=0), dtype=torch.float32, requires_grad=False, device='cuda'), requires_grad=False)
+                              3, num_point, num_point]), axis=0), dtype=torch.float32, requires_grad=False), requires_grad=False)
 
         if not residual:
             self.residual = lambda x: 0
