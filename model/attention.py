@@ -68,7 +68,7 @@ class MHSA(nn.Module):
         return x
 
 class RPE_MHSA(nn.Module):
-    def __init__(self, dim, out_dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
+    def __init__(self, dim, out_dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0., num_point=27):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
@@ -77,6 +77,7 @@ class RPE_MHSA(nn.Module):
         self.qk = nn.Linear(dim, dim * 2, bias=qkv_bias)       
         self.v = nn.Linear(dim, dim, bias=qkv_bias)
 
+        self.num_point = num_point
         self.get_rel_indices()
         self.pos_mlp = nn.Sequential(nn.Linear(1, 64, bias=True),
                                      nn.ReLU(inplace=True),
@@ -97,7 +98,7 @@ class RPE_MHSA(nn.Module):
             nn.init.constant_(m.weight, 1.0)
 
     def get_rel_indices(self):
-        graph = Graph()
+        graph = Graph(graph='wlasl' if self.num_point == 27 else 'kinetics')
         edge_index = np.array(graph.inward).T
         weight = np.ones_like(edge_index[0])
 

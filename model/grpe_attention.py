@@ -78,7 +78,7 @@ class attn_block(nn.Module):
             self.temporal_pos_embed_layer = nn.Parameter(torch.zeros(1, kwargs['window_size'], dim))
             trunc_normal_(self.temporal_pos_embed_layer, std=.02)
         if self.use_grpe:
-            self.attn = RPE_MHSA(dim, out_dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+            self.attn = RPE_MHSA(dim, out_dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop, num_point=kwargs['num_point'])
         else:
             self.attn = MHSA(dim, out_dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
 
@@ -178,7 +178,8 @@ class unit_sattn(nn.Module):
                 drop=0., 
                 drop_path=0., 
                 act_layer=nn.GELU, 
-                norm_layer=partial(nn.LayerNorm, eps=1e-6)
+                norm_layer=partial(nn.LayerNorm, eps=1e-6),
+                num_point= num_point,
             )
 
         eye_array = []

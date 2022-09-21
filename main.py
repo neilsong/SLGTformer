@@ -19,21 +19,8 @@ import random
 import inspect
 import torch.backends.cudnn as cudnn
 import torch.nn.functional as F
-from torch_geometric.loader import DataLoader
 
 import wandb
-
-# class LabelSmoothingCrossEntropy(nn.Module):
-#     def __init__(self):
-#         super(LabelSmoothingCrossEntropy, self).__init__()
-#     def forward(self, x, target, smoothing=0.1):
-#         confidence = 1. - smoothing
-#         logprobs = F.log_softmax(x, dim=-1)
-#         nll_loss = -logprobs.gather(dim=-1, index=target.unsqueeze(1))
-#         nll_loss = nll_loss.squeeze(1)
-#         smooth_loss = -logprobs.mean(dim=-1)
-#         loss = confidence * nll_loss + smoothing * smooth_loss
-#         return loss.mean()
 
 def init_seed(_):
     torch.cuda.manual_seed_all(1)
@@ -231,36 +218,18 @@ class Processor():
         Feeder = import_class(self.arg.feeder)
         self.data_loader = dict()
         if self.arg.phase == 'train':
-            if not self.arg.train_feeder_args["lap_pe"]:
-                self.data_loader['train'] = torch.utils.data.DataLoader(
-                    dataset=Feeder(**self.arg.train_feeder_args),
-                    batch_size=self.arg.batch_size,
-                    shuffle=True,
-                    num_workers=self.arg.num_worker,
-                    drop_last=True,
-                    worker_init_fn=init_seed)
-            else:
-                self.data_loader['train'] = DataLoader(
+            self.data_loader['train'] = torch.utils.data.DataLoader(
                 dataset=Feeder(**self.arg.train_feeder_args),
                 batch_size=self.arg.batch_size,
                 shuffle=True,
-                num_workers=self.arg.num_worker,
+                num_workers=self.arg.num_worker * len(self.arg.device),
                 drop_last=True,
                 worker_init_fn=init_seed)
-        if not self.arg.train_feeder_args["lap_pe"]: 
-            self.data_loader['test'] = torch.utils.data.DataLoader(
+        self.data_loader['test'] = torch.utils.data.DataLoader(
             dataset=Feeder(**self.arg.test_feeder_args),
             batch_size=self.arg.test_batch_size,
             shuffle=False,
-            num_workers=self.arg.num_worker,
-            drop_last=False,
-            worker_init_fn=init_seed)
-        else:
-            self.data_loader['test'] = DataLoader(
-            dataset=Feeder(**self.arg.test_feeder_args),
-            batch_size=self.arg.test_batch_size,
-            shuffle=False,
-            num_workers=self.arg.num_worker,
+            num_workers=self.arg.num_worker * len(self.arg.device),
             drop_last=False,
             worker_init_fn=init_seed)
 
@@ -270,10 +239,10 @@ class Processor():
         self.output_device = output_device
         Model = import_class(self.arg.model)
         shutil.copy2(inspect.getfile(Model), self.arg.work_dir)
-        self.model = Model(**self.arg.model_args).cuda(output_device)
+        self.model = Model(**self.arg.model_args).to(output_device)
         # print(self.model)
-        self.loss = nn.CrossEntropyLoss().cuda(output_device)
-        # self.loss = LabelSmoothingCrossEntropy().cuda(output_device)
+        self.loss = nn.CrossEntropyLoss().to(output_device)
+        # self.loss = LabelSmoothingCrossEntropy().to(output_device)
 
         if self.arg.weights:
             self.print_log('Load weights from {}.'.format(self.arg.weights))
@@ -285,7 +254,7 @@ class Processor():
 
             weights = OrderedDict(
                 [[k.split('module.')[-1],
-                  v.cuda(output_device)] for k, v in weights.items()])
+                  v.to(output_device)] for k, v in weights.items()])
 
             for w in self.arg.ignore_weights:
                 if weights.pop(w, None) is not None:
@@ -417,13 +386,8 @@ class Processor():
         for batch_idx, (data, label, index) in enumerate(process):
             self.global_step += 1
             # get data
-            if not self.arg.train_feeder_args["lap_pe"]: 
-                data = Variable(data.float().cuda(
-                    self.output_device), requires_grad=False)
-            else:
-                data = data.to(self.output_device)
-            label = Variable(label.long().cuda(
-                self.output_device), requires_grad=False)
+            data = data.float().to(self.output_device)
+            label = label.long().to(self.output_device)
             timer['dataloader'] += self.split_time()
 
             # forward
@@ -496,14 +460,8 @@ class Processor():
                 process = tqdm(self.data_loader[ln])
 
                 for batch_idx, (data, label, index) in enumerate(process):
-                    if not self.arg.test_feeder_args["lap_pe"]: 
-                        data = Variable(data.float().cuda(
-                            self.output_device), requires_grad=False)
-                    else:
-                        data = data.to(self.output_device)
-                    label = Variable(
-                        label.long().cuda(self.output_device),
-                        requires_grad=False)
+                    data = data.float().to(self.output_device)
+                    label = label.long().to(self.output_device)
 
                     with torch.no_grad():
                         output = self.model(data)
