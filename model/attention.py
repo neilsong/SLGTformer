@@ -98,7 +98,13 @@ class RPE_MHSA(nn.Module):
             nn.init.constant_(m.weight, 1.0)
 
     def get_rel_indices(self):
-        graph = Graph(graph='wlasl' if self.num_point == 27 else 'kinetics')
+        if self.num_point == 27:
+            graph = 'wlasl'
+        elif self.num_point == 18:
+            graph = 'kinetics'
+        elif self.num_point == 25:
+            graph = 'ntu'
+        graph = Graph(graph=graph)
         edge_index = np.array(graph.inward).T
         weight = np.ones_like(edge_index[0])
 

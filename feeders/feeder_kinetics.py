@@ -77,3 +77,8 @@ class Feeder(torch.utils.data.Dataset):
             data_numpy = tools.random_move(data_numpy)
 
         return data_numpy, label, index
+    
+    def top_k(self, score, top_k):
+        rank = score.argsort()
+        hit_top_k = [l in rank[i, -top_k:] for i, l in enumerate(self.label)]
+        return sum(hit_top_k) * 1.0 / len(hit_top_k)
