@@ -1,14 +1,14 @@
 #!/bin/bash
-# mkdir data
-# mkdir data/wlasl
-# mkdir data/csl
-# mkdir data/autsl
+mkdir data
+mkdir data/wlasl
+mkdir data/csl
+mkdir data/autsl
 
-# # wlasl
-# wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1QJo0T2q2EBaQQMyTFW98qhqErSyC_0rt&confirm=t" -O "data/wlasl/train_data_joint.npy" 
-# wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1GJJROIvHpX90kCBTRMfK2xdIk85S7IGI&confirm=t" -O "data/wlasl/train_label.pkl" 
-# wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1HsGKDepTEKVK7B9VBHmzLzGw_C9nb-oL&confirm=t" -O "data/wlasl/val_data_joint.npy"
-# wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1NgH_NL3sjcYApmkY02UAPZ77HLMzezu_&confirm=t" -O "data/wlasl/val_label.pkl"
+# wlasl
+wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1QJo0T2q2EBaQQMyTFW98qhqErSyC_0rt&confirm=t" -O "data/wlasl/train_data_joint.npy" 
+wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1GJJROIvHpX90kCBTRMfK2xdIk85S7IGI&confirm=t" -O "data/wlasl/train_label.pkl" 
+wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1HsGKDepTEKVK7B9VBHmzLzGw_C9nb-oL&confirm=t" -O "data/wlasl/val_data_joint.npy"
+wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1NgH_NL3sjcYApmkY02UAPZ77HLMzezu_&confirm=t" -O "data/wlasl/val_label.pkl"
 
 # autsl
 wget --no-check-certificate -r "https://drive.google.com/uc?export=download&id=1kFqAQzrWP_b7fGvuBcnWjY3SGQJ62hsj&confirm=t" -O "data/autsl/train_data_joint.npy"
