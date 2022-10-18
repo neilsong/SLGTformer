@@ -1,10 +1,10 @@
-Experiment_name: wlasl_all_attn_no_s_pos_emb
+Experiment_name: autsl_joint_no_shift
 
 # feeder
 feeder: feeders.feeder.Feeder
 train_feeder_args:
-  data_path: data/train_data_joint.npy
-  label_path: data/train_label.pkl
+  data_path: data/autsl/train_data_joint.npy
+  label_path: data/autsl/train_label.pkl
   debug: False
   random_choose: True
   window_size: 120
@@ -16,16 +16,18 @@ train_feeder_args:
   lap_pe: False
 
 test_feeder_args:
-  data_path: data/val_data_joint.npy
-  label_path: data/val_label.pkl
+  data_path: data/autsl/val_data_joint.npy
+  label_path: data/autsl/val_label.pkl
   random_mirror: False
+  window_size: 120
   normalization: True
+  random_choose: True
   lap_pe: False
 
 # model
 model: model.twin_attention.Model
 model_args:
-  num_class: 2000
+  num_class: 226
   num_point: 27
   num_person: 1
   graph: graph.sign_27.Graph
@@ -51,9 +53,9 @@ base_lr: 0.1
 step: [150, 200]
 
 # training
-device: [0]
-# weights: save_models/wlasl_all_attn-187.pt
-# start_epoch: 188
+device: [1]
+weights: save_models/autsl_joint_no_shift-9.pt
+start_epoch: 10
 keep_rate: 0.9
 only_train_epoch: 1
 batch_size: 24
@@ -65,7 +67,7 @@ warm_up_epoch: 20
 wandb: True
 wandb_project: SLGTformer First Run
 wandb_entity: irvl
-wandb_name: Twin Attention, No Shift, 24BS
+wandb_name: Twin Attention, No Shift, 24BS, AUTSL
 
 num_worker: 4
 save_interval: 10
