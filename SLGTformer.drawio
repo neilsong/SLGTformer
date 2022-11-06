@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2022-11-06T05:32:52.851Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.28" etag="RHKTCc048i0WYBM9kF1z" version="20.5.2" type="github">
+<mxfile host="app.diagrams.net" modified="2022-11-06T05:36:24.129Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.28" etag="JplvRnK8RVbyTVg5hLxJ" version="20.5.2" type="github">
   <diagram id="KgRbXG8umwt2WaFN6e4B" name="Page-1">
     <mxGraphModel dx="1697" dy="1040" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -131,6 +131,12 @@
         </mxCell>
         <mxCell id="_XqpVjVCsElwEC0yUfst-84" value="Dense Layer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d79b00;strokeWidth=1.5;fontFamily=Times New Roman;rotation=90;fillColor=#ffe6cc;" vertex="1" parent="1">
           <mxGeometry x="1479" y="543.74" width="201.12" height="35.75" as="geometry" />
+        </mxCell>
+        <mxCell id="_XqpVjVCsElwEC0yUfst-88" value="RGB Video" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;glass=0;sketch=1;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=14;fontColor=none;" vertex="1" parent="1">
+          <mxGeometry x="160" y="644" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="_XqpVjVCsElwEC0yUfst-89" value="27 Node Skeleton Graph" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;glass=0;sketch=1;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=14;fontColor=none;" vertex="1" parent="1">
+          <mxGeometry x="461.83" y="644" width="158.17" height="26" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
