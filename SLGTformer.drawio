@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2022-11-06T05:29:04.612Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.28" etag="5tT4luUHqzv2DANUYGMa" version="20.5.2" type="github">
+<mxfile host="app.diagrams.net" modified="2022-11-06T05:32:52.851Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.28" etag="RHKTCc048i0WYBM9kF1z" version="20.5.2" type="github">
   <diagram id="KgRbXG8umwt2WaFN6e4B" name="Page-1">
-    <mxGraphModel dx="1113" dy="716" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1697" dy="1040" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -32,7 +32,7 @@
           <mxGeometry width="120" height="30" as="geometry" />
         </mxCell>
         <mxCell id="_XqpVjVCsElwEC0yUfst-18" value="" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontColor=none;strokeColor=#990000;strokeWidth=1.5;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;connectable=1;" vertex="1" parent="1">
-          <mxGeometry x="801" y="416.34000000000003" width="740" height="285.77" as="geometry" />
+          <mxGeometry x="801" y="416.34" width="809" height="285.77" as="geometry" />
         </mxCell>
         <mxCell id="_XqpVjVCsElwEC0yUfst-19" value="SLGTformer" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Times New Roman;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;connectable=1;" vertex="1" parent="1">
           <mxGeometry x="798" y="424.34" width="120" height="30" as="geometry" />
@@ -100,10 +100,10 @@
           <mxGeometry y="135.54999999999995" width="113" height="30" as="geometry" />
         </mxCell>
         <mxCell id="_XqpVjVCsElwEC0yUfst-54" value="ReLU" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#82b366;strokeWidth=1.5;fontFamily=Times New Roman;rotation=90;fillColor=#d5e8d4;" vertex="1" parent="1">
-          <mxGeometry x="1055" y="542.13" width="160" height="35.75" as="geometry" />
+          <mxGeometry x="1049" y="542.13" width="160" height="35.75" as="geometry" />
         </mxCell>
         <mxCell id="_XqpVjVCsElwEC0yUfst-53" value="BatchNorm 1D" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#6c8ebf;strokeWidth=1.5;fontFamily=Times New Roman;rotation=90;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="1010.56" y="541.06" width="160" height="35.75" as="geometry" />
+          <mxGeometry x="1005.56" y="541.06" width="160" height="35.75" as="geometry" />
         </mxCell>
         <mxCell id="_XqpVjVCsElwEC0yUfst-78" value="" style="group" vertex="1" connectable="0" parent="1">
           <mxGeometry x="960" y="479.22" width="100" height="164.77999999999997" as="geometry" />
@@ -125,6 +125,12 @@
         </mxCell>
         <mxCell id="_XqpVjVCsElwEC0yUfst-82" value="Strided Depth-Wise Convolution" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d6b656;strokeWidth=1.5;fontFamily=Times New Roman;rotation=90;fillColor=#fff2cc;" vertex="1" parent="1">
           <mxGeometry x="1390" y="543.35" width="160" height="35.75" as="geometry" />
+        </mxCell>
+        <mxCell id="_XqpVjVCsElwEC0yUfst-83" value="Temporal Pooling&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#666666;strokeWidth=1.5;fontFamily=Times New Roman;rotation=90;fillColor=#f5f5f5;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1434" y="543.35" width="201.12" height="35.75" as="geometry" />
+        </mxCell>
+        <mxCell id="_XqpVjVCsElwEC0yUfst-84" value="Dense Layer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d79b00;strokeWidth=1.5;fontFamily=Times New Roman;rotation=90;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="1479" y="543.74" width="201.12" height="35.75" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
