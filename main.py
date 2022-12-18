@@ -250,7 +250,11 @@ class Processor():
                 with open(self.arg.weights, 'r') as f:
                     weights = pickle.load(f)
             else:
-                weights = torch.load(self.arg.weights)['weights']
+                ckpt = torch.load(self.arg.weights)
+                if 'weights' in ckpt.keys():
+                    weights = torch.load(self.arg.weights)['weights']
+                else:
+                    weights = ckpt
 
             weights = OrderedDict(
                 [[k.split('module.')[-1],
@@ -308,8 +312,10 @@ class Processor():
             raise ValueError()
 
         if self.arg.weights:
-            opt_state_dict = torch.load(self.arg.weights)['optimizer']
-            self.optimizer.load_state_dict(opt_state_dict)
+            ckpt = torch.load(self.arg.weights)
+            if 'optimizer' in ckpt.keys():
+                opt_state_dict = ckpt['optimizer']
+                self.optimizer.load_state_dict(opt_state_dict)
             
         self.lr_scheduler = ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1,
                                               patience=10, verbose=True,

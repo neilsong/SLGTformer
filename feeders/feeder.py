@@ -261,7 +261,7 @@ def test(data_path, label_path, vid=None, graph=None, is_3d=False):
                             if is_3d:
                                 pose[m][i].set_3d_properties(data[0, 2, t, [v1, v2], m])
                 fig.canvas.draw()
-                # plt.savefig('/home/lshi/Desktop/skeleton_sequence/' + str(t) + '.jpg')
+                plt.savefig(str(t) + '.jpg')
                 plt.pause(0.01)
 
 
