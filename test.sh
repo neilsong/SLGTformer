@@ -1,0 +1,1 @@
+nohup python -u main.py --config config/WLASL/test/test_joint.yaml > output/test.log 2>&1 &

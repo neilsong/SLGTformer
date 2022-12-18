@@ -7,11 +7,9 @@ import random
 
 from graph.sign_27 import Graph
 sys.path.extend(['../'])
-from feeders import posenc, tools
-from torch_geometric.data import Data
-import torch_geometric.transforms as T
 import os
 from einops import rearrange
+from feeders import tools
 
 flip_index = np.concatenate(([0,2,1,4,3,6,5],[17,18,19,20,21,22,23,24,25,26],[7,8,9,10,11,12,13,14,15,16]), axis=0) 
 
@@ -51,6 +49,9 @@ class Feeder(Dataset):
             self.get_mean_map()
 
         if self.lap_pe:
+            from feeders import posenc
+            from torch_geometric.data import Data
+            import torch_geometric.transforms as T
 
             edge_index_per_frame = torch.tensor(Graph().neighbor).long()
             self.edge_index = torch.cat([edge_index_per_frame + i * 27 for i in range(self.window_size)], axis=0).T
@@ -153,6 +154,7 @@ class Feeder(Dataset):
             data_numpy = tools.random_move(data_numpy)
 
         if self.lap_pe:
+            from torch_geometric.data import Data
             data = torch.tensor(data_numpy).float()
             data = rearrange(data, 'c t v m -> (t v) (c m)', c=3, m=1, t=self.window_size, v=27)
             data = self.transform(Data(

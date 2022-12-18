@@ -1,4 +1,4 @@
-Experiment_name: wlasl_joint_test
+Experiment_name: wlasl_twin_attention_test
 
 # feeder
 feeder: feeders.feeder.Feeder
@@ -22,10 +22,11 @@ test_feeder_args:
   normalization: True
   lap_pe: False
   debug: False
-  # window_size: 120
+  random_choose: True
+  window_size: 120
 
 # model
-model: model.decouple_gcn_attn.Model
+model: model.twin_attention.Model
 model_args:
   num_class: 2000
   num_point: 27
@@ -39,20 +40,24 @@ model_args:
   inner_dim: 64
   window_size: 120
   s_num_heads: 4
-  t_num_heads: 8
-  depth: 5
+  t_num_heads: 4
+  t_depths: [2, 2, 2, 2]
+  wss: [6, 6, 6, 6]
+  sr_ratios: [8, 4, 2, 1]
+  depth: 4
   s_pos_emb: False
+  drop_layers: 2
 
 #optim
 weight_decay: 0.0001
 base_lr: 0.1
-step: [150, 200, 250]
+step: [150, 200]
 
 # training
 device: [0]
 phase: test
-weights: save_models/wlasl_gpre_attn_with_a-249.pt
-start_epoch: 249
+weights: wlasl_twin_attn-229.pt
+start_epoch: 229
 keep_rate: 0.9
 only_train_epoch: 1
 batch_size: 24
@@ -60,6 +65,11 @@ test_batch_size: 24
 num_epoch: 250
 nesterov: True
 warm_up_epoch: 20
+
+wandb: False
+wandb_project: SLGTformer
+wandb_entity: irvl
+wandb_name: Twin Attention, Test, 24BS
 
 num_worker: 4
 save_interval: 10

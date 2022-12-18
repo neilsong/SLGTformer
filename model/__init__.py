@@ -11,6 +11,6 @@ from . import gpsa
 from . import attention
 from . import new_attention
 from . import twins_attention
-from . import twins_attention_orig
+from . import twins_attention_utils
 from . import twin_attention
 from . import grpe_attention

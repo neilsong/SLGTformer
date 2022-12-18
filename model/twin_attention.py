@@ -5,13 +5,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import math
+
 from model.attention import MHSA, DepthWiseConv2d, Mlp, bn_init, conv_init, import_class
 from model.dropSke import DropBlock_Ske
 from model.dropT import DropBlockT_1d
 from timm.models.layers import DropPath, trunc_normal_
 from einops import rearrange
 from model.grpe_attention import unit_sattn
-from model.twins_attention_orig import TwinSVT
+from model.twins_attention_utils import TwinSVT
 
 class tattn_block(nn.Module):
     def __init__(self, in_channels, out_channels, t_num_heads=4, kernel_size=1, stride=1, num_point=25, block_size=41, depth=1, wss=6, sr_ratios=8, **kwargs):

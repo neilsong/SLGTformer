@@ -1,4 +1,4 @@
-Experiment_name: wlasl_joint_attn2
+Experiment_name: wlasl_twin_attn
 
 # feeder
 feeder: feeders.feeder.Feeder
@@ -23,7 +23,7 @@ test_feeder_args:
   lap_pe: False
 
 # model
-model: model.decouple_gcn_attn.Model
+model: model.twin_attention.Model
 model_args:
   num_class: 2000
   num_point: 27
@@ -33,6 +33,17 @@ model_args:
   block_size: 41
   graph_args:
     labeling_mode: 'spatial'
+  use_grpe: True
+  inner_dim: 64
+  window_size: 120
+  s_num_heads: 4
+  t_num_heads: 4
+  t_depths: [2, 2, 2, 2]
+  wss: [6, 6, 6, 6]
+  sr_ratios: [8, 4, 2, 1]
+  depth: 4
+  s_pos_emb: False
+  drop_layers: 2
 
 #optim
 weight_decay: 0.0001
@@ -41,14 +52,20 @@ step: [150, 200]
 
 # training
 device: [0]
-# weights: save_models/csl_joint-182.pt
-# start_epoch: 183
+# weights: save_models/wlasl_all_attn-187.pt
+# start_epoch: 188
 keep_rate: 0.9
 only_train_epoch: 1
-batch_size: 64
-test_batch_size: 64
+batch_size: 24
+test_batch_size: 24
 num_epoch: 250
 nesterov: True
 warm_up_epoch: 20
 
 wandb: False
+wandb_project: SLGTformer First Run
+wandb_entity: irvl
+wandb_name: Twin Attention, No Shift, 24BS
+
+num_worker: 4
+save_interval: 10
