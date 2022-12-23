@@ -1,4 +1,20 @@
 # SLGTformer: An Attention Based Approach to Sign Language Recognition
+
+If you find this code useful for your research, consider citing:
+
+```
+@misc{https://doi.org/10.48550/arxiv.2212.10746,
+  doi = {10.48550/ARXIV.2212.10746},
+  url = {https://arxiv.org/abs/2212.10746},
+  author = {Song, Neil},
+  keywords = {Computer Vision and Pattern Recognition (cs.CV), FOS: Computer and information sciences, FOS: Computer and information sciences},
+  title = {SLGTformer: An Attention-Based Approach to Sign Language Recognition},
+  publisher = {arXiv},
+  year = {2022},
+  copyright = {Creative Commons Attribution 4.0 International}
+}
+```
+
 ## Data preparation
 
 1. Please download and use the preprocessed skeleton data for WLASL by [Skeleton Aware Multi-modal Sign Language Recognition](https://arxiv.org/abs/2103.08833). Please be sure to follow their rules and agreements when using the preprocessed data.
