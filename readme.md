@@ -14,10 +14,12 @@ If you find this code useful for your research, consider citing:
   copyright = {Creative Commons Attribution 4.0 International}
 }
 ```
+## Environment Setup
+Simply run `conda env create -f environment.yml`.
 
 ## Data preparation
 
-1. Please download and use the preprocessed skeleton data for WLASL by [Skeleton Aware Multi-modal Sign Language Recognition](https://arxiv.org/abs/2103.08833). Please be sure to follow their rules and agreements when using the preprocessed data.
+Please download and use the preprocessed skeleton data for WLASL by [Skeleton Aware Multi-modal Sign Language Recognition](https://arxiv.org/abs/2103.08833). Please be sure to follow their rules and agreements when using the preprocessed data.
     ```
     ./download.sh
     ```
