@@ -100,7 +100,7 @@ class Attention(nn.Module):
 class GroupBlock(TimmBlock):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
                  drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, sr_ratio=1, ws=1):
-        super(GroupBlock, self).__init__(dim=dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, drop=drop, attn_drop=attn_drop,
+        super(GroupBlock, self).__init__(dim=dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, proj_drop=drop, attn_drop=attn_drop,
                                          drop_path=drop_path, act_layer=act_layer, norm_layer=norm_layer)
         del self.attn
         if ws == 1:
